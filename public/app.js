@@ -102,7 +102,42 @@ function hslToRgb(h, s, l) {
         Math.round(g * 255).toString(16).padStart(2, '0') +
         Math.round(b * 255).toString(16).padStart(2, '0');
 }
+function rgbToHsl(rgb) {
+    let r, g, b, h, s, l;
 
+    r = parseInt(rgb.substring(1, 3), 16) / 255;
+    g = parseInt(rgb.substring(3, 5), 16) / 255;
+    b = parseInt(rgb.substring(5, 7), 16) / 255;
+
+    let cmax = Math.max(r, g, b);
+    let cmin = Math.min(r, g, b);
+    let deltaC = cmax - cmin;
+
+    // Hue
+    switch (true){
+        case deltaC == 0:
+            h = 0;
+            break;
+        case cmax == r:
+            h = 1/6 * (((g - b) / deltaC) % 6);
+            break;
+        case cmax == g:
+            h = 1/6 * ((b - r) / deltaC + 2);
+            break;
+        case cmax == b:
+            h = 1/6 * ((r - g) / deltaC + 4);
+            break;
+    }
+    // Brightness
+    l = (cmax + cmin) / 2
+    // Saturation
+    if (deltaC == 0)
+        s = 0;
+    else 
+        s = deltaC / (1 - Math.abs(2 * l - 1));
+
+    return [h, s, l];
+}
 function hueToRgb(p, q, t) {
     if (t < 0) t += 1;
     if (t > 1) t -= 1;
@@ -110,6 +145,37 @@ function hueToRgb(p, q, t) {
     if (t < 0.5  ) return q;
     if (t < 0.666) return p + (q - p) * (2/3 - t) * 6;
     return p;
+}
+function clamp(n, lower, upper) {
+    return Math.min(upper, Math.max(lower, n));
+}
+function modifyColor(color) {
+    // Edge cases because spaghetti
+    if (typeof color == 'number')
+        color = color + " 0 1 0 false";
+    // Split into array
+    let colorDetails = color.split(" ");
+    
+    // Get HSL values
+    let baseColor = rgbToHsl(getColor(parseInt(colorDetails[0])));
+    
+    // Get color config
+    let hueShift = parseFloat(colorDetails[1]) / 360;
+    let saturationShift = parseFloat(colorDetails[2]);
+    let brightnessShift = parseFloat(colorDetails[3]) / 100;
+    let allowBrightnessInvert = colorDetails[4] == 'true';
+
+    // Apply config
+    let finalHue = (baseColor[0] + hueShift) % 1;
+
+    let finalSaturation = clamp(baseColor[1] * saturationShift, 0, 1);
+
+    let finalBrightness = baseColor[2] + brightnessShift;
+    if (allowBrightnessInvert && (finalBrightness > 1 || finalBrightness < 0)) 
+        finalBrightness -= brightnessShift * 2;
+    finalBrightness = clamp(finalBrightness, 0, 1);
+    // Gaming.
+    return hslToRgb(finalHue, finalSaturation, finalBrightness);
 }
 function getRainbow(a, b, c = 0.5) {
     if (0 >= c) return a;
@@ -775,7 +841,7 @@ function drawTrapezoid(context, x, y, length, height, aspect, angle, borderless,
     if (fill) context.fill();
 }
 // Entity drawing (this is a function that makes a function)
-const drawEntity = (x, y, instance, ratio, alpha = 1, scale = 1, rot = 0, turretsObeyRot = false, assignedContext = false, turretInfo = false, render = instance.render) => {
+const drawEntity = (drawingEntities, x, y, instance, ratio, alpha = 1, scale = 1, rot = 0, turretsObeyRot = false, assignedContext = false, turretInfo = false, render = instance.render) => {
     let context = assignedContext ? assignedContext : ctx;
     let fade = turretInfo ? 1 : render.status.getFade(),
         drawSize = scale * ratio * instance.size,
@@ -818,13 +884,12 @@ const drawEntity = (x, y, instance, ratio, alpha = 1, scale = 1, rot = 0, turret
             if (isAutospinning && turretFacesClient) {
                 facing = instance.render.f + turretsObeyRot * rot;
             } else
-            if (turretFacesClient) {
-                facing = Math.atan2(global.target.y, global.target.x) + turretsObeyRot * rot;//util.lerp(t.defaultAngle + rot, source.turrets[i].lerpedFacing + turretsObeyRot * rot, t.perceptionAngleIndependence);
+            if (turretFacesClient && drawingEntities) {
+                facing = Math.atan2(global.target.y, global.target.x) + turretsObeyRot * rot;
             } else {
-                facing = source.turrets[i].lerpedFacing + turretsObeyRot * rot;//util.lerp(t.defaultAngle + rot, source.turrets[i].lerpedFacing + turretsObeyRot * rot, t.perceptionAngleIndependence);
+                facing = source.turrets[i].lerpedFacing + turretsObeyRot * rot;
             }
-            //console.log('instance.name: ', instance.name, '\nfacing: ', facing, '\nrot: ', rot, '\nt.defaultAngle: ', t.defaultAngle, '\nsource.turrets[i].lerpedFacing: ', source.turrets[i].lerpedFacing, '\nturretsObeyRot: ', turretsObeyRot, '\nt.perceptionAngleIndependence: ', t.perceptionAngleIndependence);
-            drawEntity(xx + len * Math.cos(ang), yy + len * Math.sin(ang), t, ratio, 1, (drawSize / ratio / t.size) * t.sizeFactor, facing, turretsObeyRot, context, source.turrets[i], render);
+            drawEntity(drawingEntities, xx + len * Math.cos(ang), yy + len * Math.sin(ang), t, ratio, 1, (drawSize / ratio / t.size) * t.sizeFactor, facing, turretsObeyRot, context, source.turrets[i], render);
         }
     }
     // Draw guns below us
@@ -836,7 +901,7 @@ const drawEntity = (x, y, instance, ratio, alpha = 1, scale = 1, rot = 0, turret
             let position = positions[i] / (g.aspect === 1 ? 2 : 1),
                 gx = g.offset * Math.cos(g.direction + g.angle + rot) + (g.length / 2 - position) * Math.cos(g.angle + rot),
                 gy = g.offset * Math.sin(g.direction + g.angle + rot) + (g.length / 2 - position) * Math.sin(g.angle + rot),
-                gunColor = g.color == null ? color.grey : getColor(g.color),
+                gunColor = g.color == null ? color.grey : modifyColor(g.color),
                 borderless = g.borderless,
                 fill = g.drawFill;
             setColor(context, mixColors(gunColor, render.status.getColor(), render.status.getBlend()));
@@ -845,7 +910,7 @@ const drawEntity = (x, y, instance, ratio, alpha = 1, scale = 1, rot = 0, turret
     }
     // Draw body
     context.globalAlpha = 1;
-    setColor(context, mixColors(getColor(instance.color), render.status.getColor(), render.status.getBlend()));
+    setColor(context, mixColors(modifyColor(instance.color), render.status.getColor(), render.status.getBlend()));
     drawPoly(context, xx, yy, (drawSize / m.size) * m.realSize, m.shape, rot, m.borderless, m.drawFill);
     // Draw guns above us
     context.lineWidth = Math.max(config.graphical.mininumBorderChunk, ratio * config.graphical.borderChunk);
@@ -855,7 +920,7 @@ const drawEntity = (x, y, instance, ratio, alpha = 1, scale = 1, rot = 0, turret
             let position = positions[i] / (g.aspect === 1 ? 2 : 1),
                 gx = g.offset * Math.cos(g.direction + g.angle + rot) + (g.length / 2 - position) * Math.cos(g.angle + rot),
                 gy = g.offset * Math.sin(g.direction + g.angle + rot) + (g.length / 2 - position) * Math.sin(g.angle + rot),
-                gunColor = g.color == null ? color.grey : getColor(g.color),
+                gunColor = g.color == null ? color.grey : modifyColor(g.color),
                 borderless = g.borderless,
                 fill = g.drawFill;
             setColor(context, mixColors(gunColor, render.status.getColor(), render.status.getBlend()));
@@ -874,12 +939,12 @@ const drawEntity = (x, y, instance, ratio, alpha = 1, scale = 1, rot = 0, turret
             if (isAutospinning && turretFacesClient) {
                 facing = instance.render.f + turretsObeyRot * rot;
             } else
-            if (turretFacesClient) {
-                facing = Math.atan2(global.target.y, global.target.x) + turretsObeyRot * rot;//util.lerp(t.defaultAngle + rot, source.turrets[i].lerpedFacing + turretsObeyRot * rot, t.perceptionAngleIndependence);
+            if (turretFacesClient && drawingEntities) {
+                facing = Math.atan2(global.target.y, global.target.x) + turretsObeyRot * rot;
             } else {
-                facing = source.turrets[i].lerpedFacing + turretsObeyRot * rot;//util.lerp(t.defaultAngle + rot, source.turrets[i].lerpedFacing + turretsObeyRot * rot, t.perceptionAngleIndependence);
+                facing = source.turrets[i].lerpedFacing + turretsObeyRot * rot;
             }
-            drawEntity(xx + len * Math.cos(ang), yy + len * Math.sin(ang), t, ratio, 1, (drawSize / ratio / t.size) * t.sizeFactor, facing, turretsObeyRot, context, source.turrets[i], render);
+            drawEntity(drawingEntities, xx + len * Math.cos(ang), yy + len * Math.sin(ang), t, ratio, 1, (drawSize / ratio / t.size) * t.sizeFactor, facing, turretsObeyRot, context, source.turrets[i], render);
         }
     }
     if (assignedContext == false && context != ctx && context.canvas.width > 0 && context.canvas.height > 0) {
@@ -1199,7 +1264,7 @@ function drawEntities(px, py, ratio) {
             y = instance.id === gui.playerid && config.graphical.centerTank ? 0 : ratio * instance.render.y - py;
         x += global.screenWidth / 2;
         y += global.screenHeight / 2;
-        drawEntity(x, y, instance, ratio, instance.id === gui.playerid || global.showInvisible ? instance.alpha ? instance.alpha * 0.6 + 0.4 : 0.25 : instance.alpha, 1.1, instance.render.f);
+        drawEntity(true, x, y, instance, ratio, instance.id === gui.playerid || global.showInvisible ? instance.alpha ? instance.alpha * 0.75 + 0.25 : 0.25 : instance.alpha, 1.1, instance.render.f);
     }
 
     //dont draw healthbars in screenshot mode
@@ -1272,7 +1337,7 @@ function drawUpgradeTree() {
             scale = (0.8 * size) / position.axis,
             xx = ax + 0.5 * size - scale * position.middle.x * Math.cos(angle),
             yy = ay + 0.5 * size - scale * position.middle.x * Math.sin(angle);
-        drawEntity(xx, yy, picture, 0.5, 1, (scale / picture.size) * 2, angle, true);
+        drawEntity(false, xx, yy, picture, 0.5, 1, (scale / picture.size) * 2, angle, true);
         ctx.strokeStyle = color.black;
         ctx.globalAlpha = 1;
         ctx.lineWidth = 2;
@@ -1483,7 +1548,7 @@ function drawMinimapAndDebug(spacing, alcoveSize) {
     ctx.fillStyle = color.black;
     drawGuiRect(x, y, len, height, true); // Border
     for (let entity of minimap.get()) {
-        ctx.fillStyle = mixColors(getColor(entity.color), color.black, 0.3);
+        ctx.fillStyle = mixColors(modifyColor(entity.color), color.black, 0.3);
         ctx.globalAlpha = entity.alpha;
         switch (entity.type) {
             case 2:
@@ -1549,7 +1614,7 @@ function drawLeaderboard(spacing, alcoveSize, max) {
         let scale = height / entry.position.axis,
             xx = x - 1.5 * height - scale * entry.position.middle.x * 0.707,
             yy = y + 0.5 * height + scale * entry.position.middle.x * 0.707;
-        drawEntity(xx, yy, entry.image, 1 / scale, 1, (scale * scale) / entry.image.size, -Math.PI / 4, true);
+        drawEntity(false, xx, yy, entry.image, 1 / scale, 1, (scale * scale) / entry.image.size, -Math.PI / 4, true);
         // Move down
         y += vspacing + height;
     }
@@ -1592,13 +1657,13 @@ function drawAvailableUpgrades(spacing, alcoveSize) {
             drawGuiRect(x, y + height * 0.6, len, height * 0.4);
             ctx.globalAlpha = 1;
 
-            //draw tank
+            // Draw Tank
             let picture = util.getEntityImageFromMockup(model, gui.color),
                 position = global.mockups[model].position,
                 scale = (0.6 * len) / position.axis,
                 xx = x + 0.5 * len - scale * position.middle.x * Math.cos(upgradeSpin),
                 yy = y + 0.5 * height - scale * position.middle.x * Math.sin(upgradeSpin);
-            drawEntity(xx, yy, picture, 1, 1, scale / picture.size, upgradeSpin, true);
+            drawEntity(false, xx, yy, picture, 1, 1, scale / picture.size, upgradeSpin, true);
             let upgradeKey = getClassUpgradeKey(ticker);
 
             // Tank name
@@ -1739,7 +1804,7 @@ const gameDrawDead = () => {
         scale = len / position.axis,
         xx = global.screenWidth / 2 - scale * position.middle.x * 0.707,
         yy = global.screenHeight / 2 - 35 + scale * position.middle.x * 0.707;
-    drawEntity((xx - 190 - len / 2 + 0.5) | 0, (yy - 10 + 0.5) | 0, picture, 1.5, 1, (0.5 * scale) / picture.realSize, -Math.PI / 4, true);
+    drawEntity(false, (xx - 190 - len / 2 + 0.5) | 0, (yy - 10 + 0.5) | 0, picture, 1.5, 1, (0.5 * scale) / picture.realSize, -Math.PI / 4, true);
     drawText("Game over man, game over.", x, y - 80, 8, color.guiwhite, "center");
     drawText("Level " + gui.__s.getLevel() + " " + global.mockups[gui.type].name, x - 170, y - 30, 24, color.guiwhite);
     drawText("Final score: " + util.formatLargeNumber(Math.round(global.finalScore.get())), x - 170, y + 25, 50, color.guiwhite);
