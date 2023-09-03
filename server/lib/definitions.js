@@ -64,7 +64,7 @@ const g = {
     micro: [1, 1, 1, 0.4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     weak: [2, 1, 1, 1, 0.6, 0.6, 0.8, 0.5, 0.7, 0.25, 0.3, 1, 1],
     power: [1, 1, 0.6, 1.2, 1, 1, 1.25, 2, 1.7, 1, 2, 0.5, 1.5],
-    fake: [1, 1, 1, 1e-5, 1e-4, 1, 1, 1e-5, 2, 0, 1, 1, 1],
+    fake: [1, 1e-5, 1, 1e-5, 1e-4, 1, 1, 1e-5, 2, 0, 1, 1, 1],
     op: [0.5, 1.3, 1, 1, 4, 4, 4, 3, 2, 1, 5, 2, 1],
     
     // Bases
@@ -809,13 +809,14 @@ function makeCeption(type, name = -1, options = {}) {
     output.DANGER = type.DANGER + 1;
     return output;
 }
-function makeDeco(shapes, color = 16) {
+function makeDeco(shapes, color = 16, borderless = false) {
     if (exports["deco" + shapes + "_" + color] == null) {
         exports["deco" + shapes + "_" + color] = {
             PARENT: [exports.genericEntity],
             SHAPE: shapes,
             COLOR: color,
             INDEPENDENT: true,
+            BORDERLESS: borderless,
         };
     }
     return exports["deco" + shapes + "_" + color];
@@ -16665,8 +16666,427 @@ exports.Team100 = {
 };
 exports.teams.UPGRADES_TIER_0.push(exports.Team100);
 
+exports.things = {
+    PARENT: [exports.genericTank],
+    LABEL: "Things",
+    IGNORED_BY_AI: true,
+}
+    exports.eggDecos = {
+        PARENT: [exports.genericTank],
+        LABEL: "Egg Decos",
+        SHAPE: 0,
+        SIZE: 12.5,
+        COLOR: 6,
+        LEVEL: 90,
+        IGNORED_BY_AI: true,
+    }
+        exports.eggDeco1_1 = {
+            PARENT: [exports.genericTank],
+            SHAPE: [
+                [0.71, 0.71], [0.64, 0.77], [0.57, 0.82], [0.49, 0.87], [0.4, 0.91], [0.32, 0.95], 
+                [0.23, 0.97], [0.14, 0.99], [0.05, 1], [-0.05, 1], [-0.14, 0.99], [-0.23, 0.97], 
+                [-0.32, 0.95], [-0.4, 0.91], [-0.49, 0.87], [-0.57, 0.82], [-0.64, 0.77], [-0.71, 0.71], 
+                [-0.6, 0.6], [-0.54, 0.65], [-0.48, 0.7], [-0.41, 0.74], [-0.34, 0.78], [-0.27, 0.81], 
+                [-0.19, 0.83], [-0.12, 0.84], [-0.04, 0.85], [0.04, 0.85], [0.12, 0.84], [0.19, 0.83], 
+                [0.27, 0.81], [0.34, 0.78], [0.41, 0.74], [0.48, 0.7], [0.54, 0.65], [0.6, 0.6]
+            ],
+            COLOR: {
+                BASE: 17,
+                BRIGHTNESS_SHIFT: 10,
+            },
+            TURRET_FACES_CLIENT: true,
+            GUNS: [
+                {
+                    POSITION: [4, 1.3, 0.001, 9, 0, 50, 0],
+                    PROPERTIES: {
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -20,
+                        },
+                        DRAW_ABOVE: true,
+                    },
+                },
+                {
+                    POSITION: [3.5, 1.7, 0.001, 9, 0, 90, 0],
+                    PROPERTIES: {
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -20,
+                        },
+                        DRAW_ABOVE: true,
+                    },
+                },
+                {
+                    POSITION: [4, 1.3, 0.001, 9, 0, 130, 0],
+                    PROPERTIES: {
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -20,
+                        },
+                        DRAW_ABOVE: true,
+                    },
+                },
+
+                {
+                    POSITION: [1.5, 1.3, 0, 7.5, 0, 50, 0],
+                    PROPERTIES: {
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -20,
+                        },
+                        DRAW_ABOVE: true,
+                    },
+                },
+                {
+                    POSITION: [1, 1.7, 0, 8, 0, 90, 0],
+                    PROPERTIES: {
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -20,
+                        },
+                        DRAW_ABOVE: true,
+                    },
+                },
+                {
+                    POSITION: [1.5, 1.3, 0, 7.5, 0, 130, 0],
+                    PROPERTIES: {
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -20,
+                        },
+                        DRAW_ABOVE: true,
+                    },
+                },
+            ]
+        }
+        exports.eggDeco1_2 = {
+            PARENT: [exports.genericTank],
+            SHAPE: [
+                [0.79, 0.33], [0.77, 0.35], [0.76, 0.38], [0.75, 0.41], [0.73, 0.43], [0.72, 0.46], 
+                [0.7, 0.48], [0.68, 0.51], [0.66, 0.53], [0.64, 0.56], [0.62, 0.58], [0.6, 0.6], 
+                [0.54, 0.54], [0.56, 0.52], [0.58, 0.5], [0.6, 0.48], [0.62, 0.46], [0.63, 0.44], 
+                [0.65, 0.42], [0.66, 0.39], [0.68, 0.37], [0.69, 0.34], [0.7, 0.32], [0.71, 0.29]
+            ],
+            COLOR: {
+                BASE: 17,
+                BRIGHTNESS_SHIFT: 10,
+            },
+            TURRET_FACES_CLIENT: true,
+        }
+        exports.eggDeco1_3 = {
+            PARENT: [exports.genericTank],
+            COLOR: {
+                BASE: 6,
+                BRIGHTNESS_SHIFT: -20,
+                SATURATION_SHIFT: 0.5,
+            },
+            GUNS: [],
+        }
+        for(let i = 0; i < 4; i++) {
+            exports.eggDeco1_3.GUNS.push(
+                {
+                    POSITION: [10*20/14.5, 11, 0.5, 0, 0, 90*i+45, 0],
+                    PROPERTIES: {
+                        COLOR: 17,
+                    }
+                }
+            )
+        }
+        exports.eggDeco1_4 = {
+            PARENT: [exports.genericTank],
+            CONTROLLERS: [
+                "canRepel",
+                "onlyAcceptInArc",
+                "mapAltToFire",
+                "nearestDifferentMaster",
+            ],
+            INDEPENDENT: true,
+            COLOR: {
+                BASE: 6,
+                BRIGHTNESS_SHIFT: -20,
+                SATURATION_SHIFT: 0.5,
+            },
+            BODY: {
+                FOV: 3,
+            },
+            GUNS: [
+                {
+                    POSITION: [18, 12, 1, 0, 0, 0, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic, g.flank, g.auto, g.fake]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 17,
+                            BRIGHTNESS_SHIFT: 5,
+                        },
+                    },
+                },
+
+                { // Main gun
+                    POSITION: [22, 10, 1, 0, 0, 0, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic, g.flank, g.auto]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -20,
+                            SATURATION_SHIFT: 0.5,
+                        },
+                    },
+                },
+
+                {
+                    POSITION: [18.5, 6.5, 1, 0, 0, 0, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic, g.flank, g.auto, g.fake]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -10,
+                            SATURATION_SHIFT: 0.5,
+                        },
+                        BORDERLESS: true,
+                    },
+                },
+                {
+                    POSITION: [14.5, 2, 1, 0, 5, 0, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic, g.flank, g.auto, g.fake]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 17,
+                            BRIGHTNESS_SHIFT: 15,
+                        },
+                    },
+                },
+                {
+                    POSITION: [14.5, 2, 1, 0, -5, 0, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic, g.flank, g.auto, g.fake]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 17,
+                            BRIGHTNESS_SHIFT: 15,
+                        },
+                    },
+                },
+            ],
+            TURRETS: [
+                {
+                    POSITION: [14.5, 0, 0, 0, 0, 1],
+                    TYPE: exports.eggDeco1_3,
+                },
+                {
+                    POSITION: [8, 0, 0, 0, 0, 1],
+                    TYPE: makeDeco(0, 6),
+                }
+            ]
+        }
+        exports.eggDeco1_5 = {
+            PARENT: [exports.genericTank],
+            COLOR: 6,
+            TURRET_FACES_CLIENT: true,
+            GUNS: [],
+        }
+        for(let i = 0; i < 2; i++) {
+            exports.eggDeco1_5.GUNS.push(
+                {
+                    POSITION: [10, 9, 0.6, 0, 0, 180*i+55, 0],
+                    PROPERTIES: {
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -12.5,
+                            SATURATION_SHIFT: 0.85,
+                        },
+                        DRAW_ABOVE: true,
+                        BORDERLESS: true,
+                    }
+                },
+                {
+                    POSITION: [10, 9, 0.6, 0, 0, 180*i+125, 0],
+                    PROPERTIES: {
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -12.5,
+                            SATURATION_SHIFT: 0.85,
+                        },
+                        DRAW_ABOVE: true,
+                        BORDERLESS: true,
+                    }
+                },
+            )
+        }
+        exports.eggDeco1 = {
+            PARENT: [exports.genericTank],
+            SIZE: 12.5,
+            LABEL: "Pacifier-Byte",
+            IGNORED_BY_AI: true,
+            GUNS: [],
+            TURRETS: [
+                // Byte
+                {
+                    POSITION: [15, 0, 0, 0, 0, 1],
+                    TYPE: exports.eggDeco1_5,
+                },
+
+                // Base
+                {
+                    POSITION: [20, 0, 0, 0, 0, 1],
+                    TYPE: exports.eggDeco1_2,
+                },
+                {
+                    POSITION: [20, 0, 0, 112.5, 0, 1],
+                    TYPE: exports.eggDeco1_2,
+                },
+                {
+                    POSITION: [20, 0, 0, 180, 0, 1],
+                    TYPE: exports.eggDeco1_2,
+                },
+                {
+                    POSITION: [20, 0, 0, 180+112.5, 0, 1],
+                    TYPE: exports.eggDeco1_2,
+                },
+                {
+                    POSITION: [20, 0, 0, 0, 0, 1],
+                    TYPE: exports.eggDeco1_1,
+                },
+                {
+                    POSITION: [20, 0, 0, 180, 0, 1],
+                    TYPE: exports.eggDeco1_1,
+                },
+
+                // Also Byte
+                {
+                    POSITION: [13*3/4, 0, 0, 0, 360, 1],
+                    TYPE: exports.eggDeco1_4,
+                },
+            ]
+        }
+        for(let i = 0; i < 2; i++) {
+            exports.eggDeco1.GUNS.splice(0, 0,
+                {
+                    POSITION: [11, 7, 0, 0, 0, 180*i+45, 0],
+                    PROPERTIES: {
+                        COLOR: 17,
+                    },
+                },
+                {
+                    POSITION: [11, 7, 0, 0, 0, 180*i+135, 0],
+                    PROPERTIES: {
+                        COLOR: 17,
+                    },
+                },
+            )
+        }
+        for(let i = 0; i < 2; i++) { // Pacifier
+            exports.eggDeco1.GUNS.splice(0, 0, 
+                { // Main barrel
+                    POSITION: [16, 8, 1, 0, 0, 180*i, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -20,
+                            SATURATION_SHIFT: 0.5,
+                        }
+                    },
+                },
+                
+                {
+                    POSITION: [14, 7, 0.9, 0, 0, 180*i, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic, g.fake]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -27.5,
+                            SATURATION_SHIFT: 0.5,
+                        },
+                        BORDERLESS: true,
+                    },
+                },
+                {
+                    POSITION: [14, 4, -0.7, 0, 0, 180*i, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic, g.fake]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -32.5,
+                            SATURATION_SHIFT: 0.5,
+                        },
+                        BORDERLESS: true,
+                    },
+                },
+                {
+                    POSITION: [1.5, 5.5, -0.6, 12.5, 0, 180*i, 0],
+                    PROPERTIES: {
+                        SHOOT_SETTINGS: combineStats([g.basic, g.fake]),
+                        TYPE: exports.bullet,
+                        COLOR: {
+                            BASE: 6,
+                            BRIGHTNESS_SHIFT: -10,
+                        }
+                    },
+                },
+            )
+        }
+    exports.squareDecos = {
+        PARENT: [exports.genericTank],
+        SHAPE: 4,
+        SIZE: 15,
+        COLOR: 13,
+        LEVEL: 120,
+        LABEL: "Square Decos",
+    }
+        exports.squareDeco1 = {
+            PARENT: [exports.genericTank],
+            SIZE: 15,
+            LABEL: "Square 1",
+        }
+    exports.triDecos = {
+        PARENT: [exports.genericTank],
+        SHAPE: 3.5,
+        SIZE: 20,
+        COLOR: 2,
+        LEVEL: 180,
+        LABEL: "Tri Decos",
+    }
+        exports.triDeco1 = {
+            PARENT: [exports.genericTank],
+            SIZE: 20,
+            LABEL: "Tri 1",
+        }
+    exports.pentaDecos = {
+        PARENT: [exports.genericTank],
+        SHAPE: 5.5,
+        SIZE: 25,
+        COLOR: 14,
+        LEVEL: 210,
+        LABEL: "Penta Decos",
+    }
+        exports.pentaDeco1 = {
+            PARENT: [exports.genericTank],
+            SIZE: 25,
+            LABEL: "Penta 1",
+        }
+    exports.hexDecos = {
+        PARENT: [exports.genericTank],
+        SHAPE: 6,
+        SIZE: 30,
+        COLOR: 0,
+        LEVEL: 270,
+        LABEL: "Hexa Decos",
+    }
+        exports.hexDeco1 = {
+            PARENT: [exports.genericTank],
+            SIZE: 30,
+            LABEL: "Hex 1",
+        }
+
 // TOKEN "UPGRADE PATHS"
-exports.developer.UPGRADES_TIER_0 = [exports.healer, exports.basic, exports.lancer, exports.gameAdminMenu, exports.spectator, exports.eggGenerator, exports.specialTanksMenu, exports.bossesMenu, exports.memes, exports.retrograde, exports.miscEntities, exports.dominators, exports.levels, exports.teams];
+exports.developer.UPGRADES_TIER_0 = [exports.things, exports.healer, exports.basic, exports.lancer, exports.gameAdminMenu, exports.spectator, exports.eggGenerator, exports.specialTanksMenu, exports.bossesMenu, exports.memes, exports.retrograde, exports.miscEntities, exports.dominators, exports.levels, exports.teams];
     exports.gameAdminMenu.UPGRADES_TIER_0 = [exports.basic, exports.gameModMenu, exports.spectator, exports.eggGenerator, exports.developer, exports.specialTanksMenu, exports.bossesMenu, exports.memes];
         exports.memes.UPGRADES_TIER_0 = [exports.vanquisher, exports.armyOfOne, exports.godbasic, exports.diamondShape, exports.rotatedTrap, exports.mummifier, exports.colorMan, exports.seventeenagon, exports.aimToCursorMan, exports.miscTest, exports.rainbowclone];
         exports.gameModMenu.UPGRADES_TIER_0 = [exports.basic, exports.betaTesterMenu, exports.spectator, exports.tankChangesMenu, exports.retrograde];
@@ -16691,6 +17111,13 @@ exports.developer.UPGRADES_TIER_0 = [exports.healer, exports.basic, exports.lanc
             exports.scrappedMenu2.UPGRADES_TIER_0 = [exports.scrappedMenu, exports.overcheese, exports.prodigy, exports.spawnerdrive, exports.rimfire, exports.productionist, exports.vulture];
                 exports.productionist.UPGRADES_TIER_0 = [exports.bismarck];
         exports.miscRetrograde.UPGRADES_TIER_0 = [exports.tracker3, exports.tetraGunner, exports.worstTank];
+
+    exports.things.UPGRADES_TIER_0 = [exports.eggDecos, exports.squareDecos, exports.triDecos, exports.pentaDecos, exports.hexDecos];
+        exports.eggDecos.UPGRADES_TIER_0 = [exports.eggDeco1];
+        exports.squareDecos.UPGRADES_TIER_0 = [exports.squareDeco1];
+        exports.triDecos.UPGRADES_TIER_0 = [exports.triDeco1];
+        exports.pentaDecos.UPGRADES_TIER_0 = [exports.pentaDeco1];
+        exports.hexDecos.UPGRADES_TIER_0 = [exports.hexDeco1];
 
 // MISCELLANEOUS
 exports.miscEntities.UPGRADES_TIER_0 = [exports.dominators, exports.baseProtector, exports.mothership, exports.arenaCloser];
